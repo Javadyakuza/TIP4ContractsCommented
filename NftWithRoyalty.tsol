@@ -1,0 +1,195 @@
+pragma solidity ^0.6.12;
+pragma AbiHeader expire;
+pragma AbiHeader time;
+pragma AbiHeader pubkey;
+
+import './interfaces/IBurnableCollection.tsol';
+import "./TIP4_1/TIP4_1Nft.tsol";
+import "./TIP4_2/TIP4_2Nft.tsol";
+import "./TIP4_3/TIP4_3Nft.tsol";
+import "./TIP4_royalty/TIP4_royaltyNft.tsol";
+import "./TIP4_royalty/structures/IRoyaltyStructure.tsol";
+
+/**
+ * @title NftWithRoyalty
+ * @dev This contract is deployed by the collection contract as the main NFT contract that is owned by individuals.
+ *
+ * This contract holds practical information about a specific NFT ID, such as royalty and metadata information.
+ * It provides the basic functionality expected from an NFT, such as transferring and burning the NFT contract.
+ *
+ * The NFT contract is responsible for deploying, destroying, resolving the code hash, and obtaining
+ * the address of its related "Index" contracts.
+ *
+ * Ownership and management logic of the NFT is also handled by this contract. It enables us to set, remove, and change the owner and manager
+ * of the NFT contract in order to have control over ownership and management of the contract.
+ *
+ */
+contract NftWithRoyalty is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, TIP4_royaltyNft {
+    /**
+     * @param owner The address of the NFT owner.
+     * @param sendGasTo The address to send the change back to.
+     * @param remainOnNft The remaining value on the NFT after the entire deployment process.
+     * @param json The JSON metadata object as a string.
+     * @param indexDeployValue The value for deploying the Index contracts.
+     * @param indexDestroyValue The value for destroying the Index contracts.
+     * @param codeIndex Index code as a TvmCell.
+     * @param royalty The royalty information.
+     */
+    constructor(
+        address owner,
+        address sendGasTo,
+        uint128 remainOnNft,
+        string json,
+        uint128 indexDeployValue,
+        uint128 indexDestroyValue,
+        TvmCell codeIndex,
+        Royalty royalty
+    ) TIP4_1Nft (
+        owner,
+        sendGasTo,
+        remainOnNft
+    ) TIP4_2Nft (
+        json
+    ) TIP4_3Nft (
+        indexDeployValue,
+        indexDestroyValue,
+        codeIndex
+    ) TIP4_royaltyNft(
+        royalty
+    ) public {
+        tvm.accept();
+    }
+
+    /**
+     * This function will destroy the Index contracts deployed for the NFT. It will be called before the transfer operation.
+     *
+     * @param to The address of the new NFT owner.
+     * @param sendGasTo The address to send the change back to.
+     * @param callbacks Mapping of addresses to callback parameters.
+     *
+     * This function will call the "_destructIndex" function on the TIP4_3Nft contract and destruct the Index contracts.
+     */
+    function _beforeTransfer(
+        address to,
+        address sendGasTo,
+        mapping(address => CallbackParams) callbacks
+    )
+        internal
+        virtual
+        override(TIP4_1Nft, TIP4_3Nft)
+    {
+        TIP4_3Nft._destructIndex(sendGasTo);
+    }
+
+    /**
+     * This function will redeploy the Index contracts for the NFT. It will be called after the transfer operation.
+     *
+     * @param to The address of the new NFT owner.
+     * @param sendGasTo The address to send the change back to.
+     * @param callbacks Mapping of addresses to callback parameters.
+     *
+     * This function will call the "_deployIndex" function on the TIP4_3Nft contract and redeploy the Index contracts.
+     */
+    function _afterTransfer(
+        address to,
+        address sendGasTo,
+        mapping(address => CallbackParams) callbacks
+    )
+        internal
+        virtual
+        override(TIP4_1Nft, TIP4_3Nft)
+    {
+        TIP4_3Nft._deployIndex();
+    }
+
+    /**
+     * This function will destroy the Index contracts deployed for the NFT. It will be called before the owner changing operation.
+     *
+     * @param oldOwner The address of the current NFT owner.
+     * @param newOwner The address of the new NFT owner.
+     * @param sendGasTo The address to send the change back to.
+     * @param callbacks Mapping of addresses to callback parameters.
+     *
+     * This function will call the "_destructIndex" function on the TIP4_3Nft contract and destruct the Index contracts.
+     */
+    function _beforeChangeOwner(
+        address oldOwner,
+        address newOwner,
+        address sendGasTo,
+        mapping(address => CallbackParams) callbacks
+    )
+        internal
+        virtual
+        override(TIP4_1Nft, TIP4_3Nft)
+    {
+        TIP4_3Nft._destructIndex(sendGasTo);
+    }
+
+    /**
+     * This function will redeploy the Index contracts after the changing owner operation.
+     *
+     * @param oldOwner The address of the previous NFT owner.
+     * @param newOwner The address of the new NFT owner.
+     * @param sendGasTo The address to send the change back to.
+     * @param callbacks Mapping of addresses to callback parameters.
+     *
+     * This function will call the "_deployIndex" function on the TIP4_3Nft contract and redeploy the Index contracts.
+     */
+    function _afterChangeOwner(
+        address oldOwner,
+        address newOwner,
+        address sendGasTo,
+        mapping(address => CallbackParams) callbacks
+    )
+        internal
+        virtual
+        override(TIP4_1Nft, TIP4_3Nft)
+    {
+        TIP4_3Nft._deployIndex();
+    }
+
+    /**
+     * This function will destroy the NFT contract by draining all of its remaining balance.
+     *
+     * @dev This function doesn't handle the destruction of the Index contracts.
+     * @param sendGasTo The address to send gas to.
+     * @param callbackTo The address of the callback.
+     * @param callbackPayload The TvmCell for the callback payload.
+     *
+     * ** preconditions **
+     *
+     * - The sender must be the manager of the Nft contract.
+     *
+     * ** postconditions **
+     *
+     * - The contract will accept to pay for the transaction.
+     * - The "acceptNftBurn" will be called on the collection contract and
+     *   all of the contract balance will be attached to its message.
+     *   The bounce for this message will be "false" to ensure that
+     *   all of the contract balance will not return to it.
+     * - If the sender is not the manager, the transaction will be reverted.
+     */
+    function burn(
+        address sendGasTo,
+        address callbackTo,
+        TvmCell callbackPayload
+    )
+        external
+        virtual
+        onlyManager
+    {
+        tvm.accept();
+        IBurnableCollection(_collection).acceptNftBurn{
+            value: 0,
+            flag: 128 + 32,
+            bounce: false
+        }(
+            _id,
+            _owner,
+            _manager,
+            sendGasTo,
+            callbackTo,
+            callbackPayload
+        );
+    }
+}
