@@ -12,27 +12,28 @@ import "./TIP4_royalty/structures/IRoyaltyStructure.tsol";
 
 /**
  * @title NftWithRoyalty
- * @dev This contract is deployed by the collection contract as the main NFT contract that is owned by individuals.
+ * @dev This contract is deployed by the collection contract as the main Nft contract that is owned by individuals.
  *
- * This contract holds practical information about a specific NFT ID, such as royalty and metadata information.
- * It provides the basic functionality expected from an NFT, such as transferring and burning the NFT contract.
+ * This contract holds practical information about a specific Nft ID, such as royalty and metadata information.
+ * It provides the basic functionality expected from an Nft, such as transferring and burning the Nft contract.
  *
- * The NFT contract is responsible for deploying, destroying, resolving the code hash, and obtaining
- * the address of its related "Index" contracts.
+ * The Nft contract is responsible for deploying, destroying, resolving the code hash, and obtaining
+ * the address of its related { Index } contracts.
  *
- * Ownership and management logic of the NFT is also handled by this contract. It enables us to set, remove, and change the owner and manager
- * of the NFT contract in order to have control over ownership and management of the contract.
+ * Ownership and management logic of the Nft is also handled by this contract. It enables us to set, remove, and change the owner and manager
+ * of the Nft contract in order to have control over ownership and management of the contract.
  *
  */
 contract NftWithRoyalty is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, TIP4_royaltyNft {
+
     /**
-     * @param owner The address of the NFT owner.
+     * @param owner The address of the Nft owner.
      * @param sendGasTo The address to send the change back to.
-     * @param remainOnNft The remaining value on the NFT after the entire deployment process.
+     * @param remainOnNft The remaining value on the Nft after the entire deployment process.
      * @param json The JSON metadata object as a string.
-     * @param indexDeployValue The value for deploying the Index contracts.
-     * @param indexDestroyValue The value for destroying the Index contracts.
-     * @param codeIndex Index code as a TvmCell.
+     * @param indexDeployValue The value for deploying the { Index } contracts.
+     * @param indexDestroyValue The value for destroying the { Index } contracts.
+     * @param codeIndex { Index } code as a TvmCell.
      * @param royalty The royalty information.
      */
     constructor(
@@ -61,13 +62,13 @@ contract NftWithRoyalty is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, TIP4_royaltyNft {
     }
 
     /**
-     * This function will destroy the Index contracts deployed for the NFT. It will be called before the transfer operation.
+     * @dev This function will destroy the { Index } contracts deployed for the Nft. It will be called before the transfer operation.
      *
-     * @param to The address of the new NFT owner.
+     * @param to The address of the new Nft owner.
      * @param sendGasTo The address to send the change back to.
      * @param callbacks Mapping of addresses to callback parameters.
      *
-     * This function will call the "_destructIndex" function on the TIP4_3Nft contract and destruct the Index contracts.
+     * @dev This function will call the { _destructIndex } function on the { TIP4_3Nft } contract and destruct the { Index } contracts.
      */
     function _beforeTransfer(
         address to,
@@ -82,13 +83,13 @@ contract NftWithRoyalty is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, TIP4_royaltyNft {
     }
 
     /**
-     * This function will redeploy the Index contracts for the NFT. It will be called after the transfer operation.
+     * @dev This function will redeploy the { Index } contracts for the Nft. It will be called after the transfer operation.
      *
-     * @param to The address of the new NFT owner.
+     * @param to The address of the new Nft owner.
      * @param sendGasTo The address to send the change back to.
      * @param callbacks Mapping of addresses to callback parameters.
      *
-     * This function will call the "_deployIndex" function on the TIP4_3Nft contract and redeploy the Index contracts.
+     * @dev This function will call the { _deployIndex } function on the { TIP4_3Nft } contract and redeploy the { Index } contracts.
      */
     function _afterTransfer(
         address to,
@@ -103,14 +104,14 @@ contract NftWithRoyalty is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, TIP4_royaltyNft {
     }
 
     /**
-     * This function will destroy the Index contracts deployed for the NFT. It will be called before the owner changing operation.
+     * @dev This function will destroy the { Index } contracts deployed for the Nft. It will be called before the owner changing operation.
      *
-     * @param oldOwner The address of the current NFT owner.
-     * @param newOwner The address of the new NFT owner.
+     * @param oldOwner The address of the current Nft owner.
+     * @param newOwner The address of the new Nft owner.
      * @param sendGasTo The address to send the change back to.
      * @param callbacks Mapping of addresses to callback parameters.
      *
-     * This function will call the "_destructIndex" function on the TIP4_3Nft contract and destruct the Index contracts.
+     * @dev This function will call the { _destructIndex } function on the { TIP4_3Nft } contract and destruct the { Index } contracts.
      */
     function _beforeChangeOwner(
         address oldOwner,
@@ -126,14 +127,14 @@ contract NftWithRoyalty is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, TIP4_royaltyNft {
     }
 
     /**
-     * This function will redeploy the Index contracts after the changing owner operation.
+     * @dev This function will redeploy the { Index } contracts after the changing owner operation.
      *
-     * @param oldOwner The address of the previous NFT owner.
-     * @param newOwner The address of the new NFT owner.
+     * @param oldOwner The address of the previous Nft owner.
+     * @param newOwner The address of the new Nft owner.
      * @param sendGasTo The address to send the change back to.
      * @param callbacks Mapping of addresses to callback parameters.
      *
-     * This function will call the "_deployIndex" function on the TIP4_3Nft contract and redeploy the Index contracts.
+     * @dev This function will call the { _deployIndex } function on the { TIP4_3Nft } contract and redeploy the { Index } contracts.
      */
     function _afterChangeOwner(
         address oldOwner,
@@ -149,25 +150,25 @@ contract NftWithRoyalty is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, TIP4_royaltyNft {
     }
 
     /**
-     * This function will destroy the NFT contract by draining all of its remaining balance.
+     * @dev This function will destroy the Nft contract by draining all of its remaining balance.
      *
      * @dev This function doesn't handle the destruction of the Index contracts.
      * @param sendGasTo The address to send gas to.
      * @param callbackTo The address of the callback.
      * @param callbackPayload The TvmCell for the callback payload.
      *
-     * ** preconditions **
+     * ** Preconditions **
      *
      * - The sender must be the manager of the Nft contract.
      *
-     * ** postconditions **
+     * ** Postconditions **
      *
      * - The contract will accept to pay for the transaction.
-     * - The "acceptNftBurn" will be called on the collection contract and
+     * - The { acceptNftBurn } will be called on the collection contract and
      *   all of the contract balance will be attached to its message.
      *   The bounce for this message will be "false" to ensure that
      *   all of the contract balance will not return to it.
-     * - If the sender is not the manager, the transaction will be reverted.
+     * - If the sender is not the { manager }, the transaction will be reverted.
      */
     function burn(
         address sendGasTo,

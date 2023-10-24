@@ -14,18 +14,18 @@ import "./TIP4_royalty/structures/IRoyaltyStructure.tsol";
 
 /**
  * @title Collection
- * @dev This contract represents the main functionality for the existence of an NFT collection on the network.
+ * @dev This contract represents the main functionality for the existence of an Nft collection on the network.
  * It combines the functionalities from other collection contracts and encompasses them all.
  *
- * This contract holds general information about the NFT collection, such as the total supply and codes of the deployable contracts.
- * Its main functionality is to handle the process of deploying the "Nft" and "IndexBasis" contracts and also handle the destroying process of them.
- * Notice that the "IndexBasis" contract will be destroyed directly,
+ * This contract holds general information about the Nft collection, such as the total supply and codes of the deployable contracts.
+ * Its main functionality is to handle the process of deploying the "Nft" and { IndexBasis } contracts and also handle the destroying process of them.
+ * Notice that the { IndexBasis } contract will be destroyed directly,
  * while the destruction (burning) of the "Nft" contract is handled by the "Nft" contract itself. The collection contract only updates its state based on that.
  *
  * Additionally, it provides the users' addresses and code hashes of the relevant contracts, such as
- * "IndexBasis" and "Nft", by calculating them instead of storing them.
+ * {IndexBasis} and "Nft", by calculating them instead of storing them.
  *
- * The collection contract is also enabled to batch mint the NFTs.
+ * The collection contract is also enabled to batch mint the Nfts.
  *
  */
 contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, OwnableInternal, IRoyaltyStructure {
@@ -35,15 +35,15 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
 
     uint128 _remainOnNft;
 
-    // Total minted NFTs (active or non-active)
+    /// @dev Total minted Nfts (active or non-active)
     uint256 _totalMinted;
 
     /**
-     * @param codeNft NFT contract code as a TvmCell.
-     * @param codeIndex Index contract code as a TvmCell.
-     * @param codeIndexBasis Index basis contract code as a TvmCell.
+     * @param codeNft { NftWithRoyalty } contract code as a TvmCell.
+     * @param codeIndex { Index } contract code as a TvmCell.
+     * @param codeIndexBasis { IndexBasis } contract code as a TvmCell.
      * @param owner The address of the collection owner.
-     * @param remainOnNft The number of EVERs that will remain after the entire mint process is completed on the NFT contract.
+     * @param remainOnNft The number of EVERs that will remain after the entire mint process is completed on the Nft contract.
      * @param json The JSON metadata object as a string.
      */
     constructor(
@@ -66,19 +66,19 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
     }
 
     /**
-     *  This function is utilized to get the depth of the Nft code.
-     * @return The depth of the NFT code.
+     * @dev This function is utilized to get the depth of the Nft code.
+     * @return The depth of the Nft code.
      */
     function codeDepth() public view returns(uint16) {
         return (_buildNftCode(address(this)).depth());
     }
 
     /**
-     * This function handles the minting process of a single NFT.
+     * @dev This function handles the minting process of a single Nft.
      *
-     * @param _owner The address of the NFT owner.
-     * @param _json The unique NFT related JSON metadata object as a string.
-     * @param _royalty The royalty information for the NFT.
+     * @param _owner The address of the Nft owner.
+     * @param _json The unique Nft related JSON metadata object as a string.
+     * @param _royalty The royalty information for the Nft.
      *
      * The minting process cost is paid by the sender.
 
@@ -87,9 +87,7 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
      * - The sender must be the owner of the collection contract.
      * - The attached value to the incoming message must be more than _remainOnNft + _indexDeployValue * 2 + 0.3 ever.
      *
-     * @dev The reason that the _indexDeployValue is multiplied by two is that the two Index contracts will be deployed.
-     *
-     * ** postconditions **
+     * ** Postconditions **
      *
      * - The collection contract balance will reserve 1 ever and the "_mint" function will be called.
      * - If any condition is not met, the transaction will be reverted.
@@ -101,31 +99,32 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
     }
 
     /**
-     * This function is utilized to get the total number of minted NFTs, including active and non-active (burnt) NFTs.
-     * @return count The total number of minted NFTs.
+     * @dev This function is utilized to get the total number of minted Nfts, including active and non-active (burnt) Nfts.
+     * @return count The total number of minted Nfts.
      */
     function totalMinted() external view responsible returns (uint256 count) {
         return {value: 0, flag: 64, bounce: false} (_totalMinted);
     }
 
     /**
-     * This function will handle the batch minting process of multiple NFTs.
+     * @dev This function will handle the batch minting process of multiple Nfts.
      *
-     * @param _owner The address of the NFT owner.
-     * @param _jsons The array of JSON metadata objects as strings for each unique NFT id.
-     * @param _royalty The royalty information for the NFTs.
+     * @param _owner The address of the Nft owner.
+     * @param _jsons The array of JSON metadata objects as strings for each unique Nft id.
+     * @param _royalty The royalty information for the Nfts.
+     *
+     * @dev Notice that if batch minting the Nfts, a constant royalty information and owner will be considered for all the minting Nfts.
      *
      * ** preconditions **
      *
      * - The sender must be the owner of the collection contract.
      * - The attached value to the incoming message must be more than (_remainOnNft + 3 ever) * jsonsArray.length() + 1 ever.
      *
-     * ** postconditions **
+     * ** Postconditions **
      *
      * - The collection contract balance will reserve 1 ever and the "_mint" function will be called jsonArray.length() times.
      * - If any condition is not met, the transaction will be reverted.
      *
-     * Notice that if batch minting the NFTs, a constant royalty information and owner will be considered for all the minting NFTs.
      *
      */
     function batchMintNft(address _owner, string[] _jsons, Royalty _royalty) public virtual onlyOwner {
@@ -137,19 +136,19 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
     }
 
     /**
-     * This function deploys (mints) a new NFT contract.
+     * @dev This function deploys (mints) a new Nft contract.
      *
-     * @param owner The address of the NFT owner.
-     * @param json The JSON metadata object as a string for the NFT.
-     * @param value The value to be transferred to the NFT contract as the initial value.
-     * @param royalty The royalty information for the specific NFT id.
+     * @param owner The address of the Nft owner.
+     * @param json The JSON metadata object as a string for the Nft.
+     * @param value The value to be transferred to the Nft contract as the initial value.
+     * @param royalty The royalty information for the specific Nft id.
      *
-     * This function will first build the Nft code as a TvmCell and then its state using the generated code and the unique id. Accordingly, it will
-     * deploy a new NFT contract and emit the "NftCreated" event.
+     * @dev This function will first build the { NftWithRoyalty } code as a TvmCell and then its state using the generated code and the unique id. Accordingly, it will
+     * deploy a new Nft contract and emit the { NftCreated } event.
      *
-     * Notice that the new id of the NFT will be the totalMinted value and not the totalSupply.
+     * Notice that the new id of the Nft will be the { totalMinted } value and not the { totalSupply }.
      *
-     * The address of the newly minted NFT can be fetched using the "nftAddress" function from the TIP4_1Collection and
+     * The address of the newly minted Nft can be fetched using the { NftAddress } function from the { TIP4_1Collection } and
      * its related id as the input.
      */
     function _mintNft(address owner, string json, uint128 value, uint16 flag, Royalty royalty) internal virtual {
@@ -172,15 +171,15 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
     }
 
     /**
-     *  This function is utilized to set the number of EVERs that will remain after the entire mint process is completed on the NFT contract.
+     *  @dev This function is utilized to set the number of EVERs that will remain after the entire mint process is completed on the Nft contract.
      *
-     * @param remainOnNft The number of EVERs that will remain on the NFT.
+     * @param remainOnNft The number of EVERs that will remain on the Nft.
      *
      * ** preconditions **
      *
      * - The sender must be the owner.
      *
-     * ** postconditions **
+     * ** Postconditions **
      *
      * - If the sender is not the owner, the transaction will be reverted.
      */
@@ -188,14 +187,8 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
         _remainOnNft = remainOnNft;
     }
 
-    /**
-     * This function generates the NFT contract's state based on its contract code and unique id.
-     *
-     * @param code Nft code as a TvmCell.
-     * @param id The id of the NFT (total supply).
-     *
-     * @return A TvmCell representing the state of the NFT.
-     */
+    /// @dev Overrides standard method, because Nft contract is changed.
+    /// @dev see{ TIP4_1Collection-_buildNftState }
     function _buildNftState(TvmCell code, uint256 id)
         internal
         pure
@@ -207,13 +200,13 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
     }
 
     /**
-     * This function is used to resolve the code hash of the Index contract based on the related NFT owner and the associated collection address.
+     * @dev This function is used to resolve the code hash of the { Index } contract based on the related Nft owner and the associated collection address.
      *
      * @param collection The address of the collection.
-     * @param owner The address of the NFT owner.
+     * @param owner The address of the Nft owner.
      *
-     * The collection address must be zero if looking for all of the NFTs owned related to the user's Index contract code hash.
-     * If an actual collection address is passed as the input, the NFTs owned by the user related to the Index contract code hash from that specific collection will be returned.
+     * @dev The collection address must be zero if looking for all of the Nfts owned related to the user's { Index } contract code hash.
+     * If an actual collection address is passed as the input, the Nfts owned by the user related to the { Index } contract code hash from that specific collection will be returned.
      *
      * @return The resolved code hash.
      *
@@ -224,28 +217,28 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, IBurnableCollection, 
     }
 
     /**
-     * This function will update the collection contract state and handle the callbacks defined operations after an NFT gets burnt.
+     * @dev This function will update the collection contract state and handle the callbacks defined operations after an Nft gets burnt.
      *
-     * @param _id The ID of the unique NFT.
-     * @param _owner The address of the NFT owner.
-     * @param _manager The address of the NFT manager.
+     * @param _id The ID of the unique Nft.
+     * @param _owner The address of the Nft owner.
+     * @param _manager The address of the Nft manager.
      * @param _sendGasTo The address to send change back.
      * @param _callbackTo The address of the callback.
      * @param _callbackPayload The TvmCell for the callback payload.
      *
-     * If there is any callback defined, the callback receiver must implement the "IAcceptNftBurnCallback" interface. see {IAcceptNftBurnCallback.tsol}
+     * @dev If there is any callback defined, the callback receiver must implement the { IAcceptNftBurnCallback } interface. see { IAcceptNftBurnCallback }
      *
      * ** preconditions **
      *
-     * - The sender must be the associated ID's NFT contract.
+     * - The sender must be the associated ID's Nft contract.
      *
-     * ** postconditions **
+     * ** Postconditions **
      *
-     * - The total supply will be reduced by one.
-     * - "NftBurned" event will be emitted.
+     * - The { totalSupply } will be reduced by one.
+     * - { NftBurned } event will be emitted.
      * - If any callbacks are defined, their operations will be handled.
-     * - If there are no callbacks defined, the remaining gas will be sent to "_sendGasTo".
-     * - If the sender is not the valid NFT contract, the transaction will be reverted.
+     * - If there are no callbacks defined, the remaining gas will be sent to { _sendGasTo }.
+     * - If the sender is not the valid Nft contract, the transaction will be reverted.
      */
     function acceptNftBurn(
         uint256 _id,
